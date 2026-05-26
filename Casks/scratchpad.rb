@@ -6,8 +6,8 @@
 # aaronmyatt/scratchpad repo. scripts/release.sh renders this template
 # into tap/Casks/scratchpad.rb on every release, substituting:
 #
-#   0.1.2  → the bare semver (e.g. 0.1.0)
-#   886cb9939847109e71153150118bb1a05cc0cb6fba0e07b4a97a71f4856e4917   → the sha256 of the published Scratchpad-arm64.tar.gz
+#   0.1.3  → the bare semver (e.g. 0.1.0)
+#   fcbe25d1384a2ed3b5cf146185eee82654c263835780624ebaba52cffca86da5   → the sha256 of the published Scratchpad-arm64.tar.gz
 #
 # To change the formula's structure (add stanzas, change URL pattern,
 # adjust zap targets, etc.), edit THIS file. The next release publishes
@@ -18,29 +18,30 @@
 #
 # Why a Cask and not a Formula:
 #   - Casks distribute pre-built macOS .app bundles via brew's
-#     /Applications copy + quarantine-strip pipeline.
+#     /Applications copy pipeline.
 #   - Formulas build from source — overkill for a binary distribution.
 #
 # Why this is in a personal tap, not homebrew/cask main:
 #   - The main cask repo requires Apple signing + notarization, which
 #     v1 deliberately skips (see decision-3 in the scratchpad repo).
-#   - Personal taps have no such policy; brew's standard quarantine
-#     strip still gives users a Gatekeeper-free install.
+#   - Personal taps have no such policy. A postflight quarantine strip
+#     (see the `postflight` block below) gives users a Gatekeeper-free
+#     install — homebrew/cask main rejects that pattern; personal taps
+#     accept it because the user opted into the tap by name.
 
 cask "scratchpad" do
-  version "0.1.2"
-  sha256  "886cb9939847109e71153150118bb1a05cc0cb6fba0e07b4a97a71f4856e4917"
+  version "0.1.3"
+  sha256  "fcbe25d1384a2ed3b5cf146185eee82654c263835780624ebaba52cffca86da5"
 
   url      "https://github.com/aaronmyatt/scratchpad/releases/download/v#{version}/Scratchpad-arm64.tar.gz"
   name     "Scratchpad"
   desc     "Pinned, menu-bar-resident dump receiver for macOS"
   homepage "https://github.com/aaronmyatt/scratchpad"
 
-  # The `app` stanza handles:
-  #   - Copying Scratchpad.app into /Applications
-  #   - Stripping the com.apple.quarantine xattr (the friction-free
-  #     Gatekeeper bypass that justifies this whole install path)
-  #   - Tracking the install in brew's manifest for clean uninstalls
+  # The `app` stanza copies Scratchpad.app into /Applications and tracks
+  # the install in brew's manifest for clean uninstalls. It does NOT
+  # strip com.apple.quarantine on its own — that's the postflight block's
+  # job below (brew Cask defaulted to quarantining apps starting ~2020).
   app "Scratchpad.app"
 
   # The `binary` stanza symlinks the bundled sp CLI into brew's bin dir
@@ -57,6 +58,31 @@ cask "scratchpad" do
   # still get the PathInstaller dialog on first launch.
   # Ref: https://docs.brew.sh/Cask-Cookbook#stanza-binary
   binary "#{appdir}/Scratchpad.app/Contents/MacOS/sp"
+
+  # Strip com.apple.quarantine after install so the app launches without
+  # Sequoia's "Apple could not verify Scratchpad" dialog. brew Cask does
+  # NOT strip the xattr automatically (it's added by default for unsigned
+  # apps, which is the friction this stanza exists to remove). On macOS
+  # 15 the quarantine flag on an unsigned app blocks launch with no
+  # right-click → Open bypass — only the System Settings dance works.
+  #
+  # Stripping in postflight is the standard pattern for personal-tap
+  # Casks distributing unsigned apps. The user implicitly consents to
+  # bypassing Gatekeeper by `brew tap`-ing a personal repo — that's the
+  # security boundary, not the xattr. Notarization would let us drop
+  # this whole stanza, but per decision-3 v1 deliberately skips that.
+  #
+  # `must_succeed: false` because xattr -d returns non-zero when the
+  # attribute is absent (already-clean install, repeat install, etc.),
+  # which we don't want to treat as an install failure.
+  #
+  # Equivalent to running by hand: xattr -dr com.apple.quarantine <app>
+  # Ref: https://docs.brew.sh/Cask-Cookbook#stanza-postflight
+  postflight do
+    system_command "/usr/bin/xattr",
+                   args: ["-dr", "com.apple.quarantine", "#{appdir}/Scratchpad.app"],
+                   must_succeed: false
+  end
 
   # Uninstall: brew handles app removal automatically via the `app`
   # stanza; we just clean up UserDefaults so a reinstall starts fresh.
