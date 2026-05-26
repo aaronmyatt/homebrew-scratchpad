@@ -6,8 +6,8 @@
 # aaronmyatt/scratchpad repo. scripts/release.sh renders this template
 # into tap/Casks/scratchpad.rb on every release, substituting:
 #
-#   0.1.1  → the bare semver (e.g. 0.1.0)
-#   05b44533c41efac0d34a47afa602f3a2234bf4f3606a75f0a771b901cc630076   → the sha256 of the published Scratchpad-arm64.tar.gz
+#   0.1.2  → the bare semver (e.g. 0.1.0)
+#   886cb9939847109e71153150118bb1a05cc0cb6fba0e07b4a97a71f4856e4917   → the sha256 of the published Scratchpad-arm64.tar.gz
 #
 # To change the formula's structure (add stanzas, change URL pattern,
 # adjust zap targets, etc.), edit THIS file. The next release publishes
@@ -28,8 +28,8 @@
 #     strip still gives users a Gatekeeper-free install.
 
 cask "scratchpad" do
-  version "0.1.1"
-  sha256  "05b44533c41efac0d34a47afa602f3a2234bf4f3606a75f0a771b901cc630076"
+  version "0.1.2"
+  sha256  "886cb9939847109e71153150118bb1a05cc0cb6fba0e07b4a97a71f4856e4917"
 
   url      "https://github.com/aaronmyatt/scratchpad/releases/download/v#{version}/Scratchpad-arm64.tar.gz"
   name     "Scratchpad"
