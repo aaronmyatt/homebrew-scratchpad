@@ -6,8 +6,8 @@
 # aaronmyatt/scratchpad repo. scripts/release.sh renders this template
 # into tap/Casks/scratchpad.rb on every release, substituting:
 #
-#   0.1.3  → the bare semver (e.g. 0.1.0)
-#   fcbe25d1384a2ed3b5cf146185eee82654c263835780624ebaba52cffca86da5   → the sha256 of the published Scratchpad-arm64.tar.gz
+#   0.1.4  → the bare semver (e.g. 0.1.0)
+#   29ca7b6eee33e2491b4c22c99098462a92b342d5a4820bb611d06760f28750c1   → the sha256 of the published Scratchpad-arm64.tar.gz
 #
 # To change the formula's structure (add stanzas, change URL pattern,
 # adjust zap targets, etc.), edit THIS file. The next release publishes
@@ -30,8 +30,8 @@
 #     accept it because the user opted into the tap by name.
 
 cask "scratchpad" do
-  version "0.1.3"
-  sha256  "fcbe25d1384a2ed3b5cf146185eee82654c263835780624ebaba52cffca86da5"
+  version "0.1.4"
+  sha256  "29ca7b6eee33e2491b4c22c99098462a92b342d5a4820bb611d06760f28750c1"
 
   url      "https://github.com/aaronmyatt/scratchpad/releases/download/v#{version}/Scratchpad-arm64.tar.gz"
   name     "Scratchpad"
