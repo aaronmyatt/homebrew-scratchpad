@@ -6,8 +6,8 @@
 # aaronmyatt/scratchpad repo. scripts/release.sh renders this template
 # into tap/Casks/scratchpad.rb on every release, substituting:
 #
-#   0.1.0  → the bare semver (e.g. 0.1.0)
-#   223179dbf4d289e45625fe2b00d50ceac98c555d6f9dfea753aac0c2e511f566   → the sha256 of the published Scratchpad-arm64.tar.gz
+#   0.1.1  → the bare semver (e.g. 0.1.0)
+#   05b44533c41efac0d34a47afa602f3a2234bf4f3606a75f0a771b901cc630076   → the sha256 of the published Scratchpad-arm64.tar.gz
 #
 # To change the formula's structure (add stanzas, change URL pattern,
 # adjust zap targets, etc.), edit THIS file. The next release publishes
@@ -28,8 +28,8 @@
 #     strip still gives users a Gatekeeper-free install.
 
 cask "scratchpad" do
-  version "0.1.0"
-  sha256  "223179dbf4d289e45625fe2b00d50ceac98c555d6f9dfea753aac0c2e511f566"
+  version "0.1.1"
+  sha256  "05b44533c41efac0d34a47afa602f3a2234bf4f3606a75f0a771b901cc630076"
 
   url      "https://github.com/aaronmyatt/scratchpad/releases/download/v#{version}/Scratchpad-arm64.tar.gz"
   name     "Scratchpad"
@@ -43,8 +43,20 @@ cask "scratchpad" do
   #   - Tracking the install in brew's manifest for clean uninstalls
   app "Scratchpad.app"
 
-  # First-launch behaviour (PathInstaller, TASK-29 in the scratchpad
-  # repo) handles the `sp` CLI on PATH — no postflight needed here.
+  # The `binary` stanza symlinks the bundled sp CLI into brew's bin dir
+  # (/opt/homebrew/bin on Apple Silicon, /usr/local/bin on Intel) so it's
+  # immediately on PATH after `brew install` — no need to open the app
+  # first. `appdir` is brew's variable for /Applications (or wherever the
+  # user's APPDIR is set), so this symlink survives both default and
+  # custom-prefix installs.
+  #
+  # First-launch PathInstaller (TASK-29 in the scratchpad repo) detects
+  # an existing `sp` on PATH and silently no-ops, so the two paths
+  # coexist cleanly: brew-installed users get sp immediately via this
+  # stanza; users installing via the curl|bash or direct-download paths
+  # still get the PathInstaller dialog on first launch.
+  # Ref: https://docs.brew.sh/Cask-Cookbook#stanza-binary
+  binary "#{appdir}/Scratchpad.app/Contents/MacOS/sp"
 
   # Uninstall: brew handles app removal automatically via the `app`
   # stanza; we just clean up UserDefaults so a reinstall starts fresh.
